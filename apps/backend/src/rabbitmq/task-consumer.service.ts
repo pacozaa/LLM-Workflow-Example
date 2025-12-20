@@ -65,11 +65,29 @@ export class TaskConsumerService implements OnModuleInit {
     } catch (error) {
       this.logger.error(`Task ${taskId} failed`, error);
 
+      // Sanitize error message for database storage
+      const sanitizedError = this.sanitizeError(error);
+
       // Update task with error
       await this.taskRepository.update(taskId, {
         status: TaskStatus.FAILED,
-        error: error.message || 'Unknown error',
+        error: sanitizedError,
       });
     }
+  }
+
+  private sanitizeError(error: any): string {
+    // Remove sensitive information from error messages
+    if (error?.response?.data?.error) {
+      // OpenAI API errors
+      return `AI service error: ${error.response.data.error.type || 'unknown'}`;
+    }
+    if (error?.message) {
+      // Generic errors - remove stack traces and sensitive data
+      const message = error.message.toString();
+      // Remove potential API keys or tokens from error messages
+      return message.replace(/\b[A-Za-z0-9_-]{20,}\b/g, '[REDACTED]');
+    }
+    return 'An unexpected error occurred during processing';
   }
 }

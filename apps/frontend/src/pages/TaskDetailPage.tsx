@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { taskService } from '../services/api';
 import { type Task, TaskStatus } from '../types/task';
@@ -11,7 +11,7 @@ export default function TaskDetailPage() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const fetchTask = async () => {
+  const fetchTask = useCallback(async () => {
     if (!id) return;
 
     try {
@@ -24,21 +24,24 @@ export default function TaskDetailPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     fetchTask();
-    
+  }, [fetchTask]);
+
+  useEffect(() => {
     // Auto-refresh every 3 seconds if task is not completed or failed
+    if (!task || (task.status !== TaskStatus.PENDING && task.status !== TaskStatus.PROCESSING)) {
+      return;
+    }
+
     const interval = setInterval(() => {
-      if (task && (task.status === TaskStatus.PENDING || task.status === TaskStatus.PROCESSING)) {
-        fetchTask();
-      }
+      fetchTask();
     }, 3000);
 
     return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, task?.status]);
+  }, [task, fetchTask]);
 
   const getStatusClass = (status: TaskStatus) => {
     switch (status) {
