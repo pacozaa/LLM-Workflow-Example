@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { taskService } from '../services/api';
-import { Task, TaskStatus } from '../types/task';
+import { type Task, TaskStatus } from '../types/task';
 import './TaskListPage.css';
 
 export default function TaskListPage() {

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { taskService } from '../services/api';
-import { Task, TaskStatus } from '../types/task';
+import { type Task, TaskStatus } from '../types/task';
 import './TaskDetailPage.css';
 
 export default function TaskDetailPage() {
@@ -37,6 +37,7 @@ export default function TaskDetailPage() {
     }, 3000);
 
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, task?.status]);
 
   const getStatusClass = (status: TaskStatus) => {
