@@ -8,9 +8,7 @@ A modern monorepo project featuring React frontend and NestJS backends.
 .
 ├── apps/
 │   ├── frontend/          # React + Vite + TypeScript frontend
-│   ├── task-publisher/    # NestJS backend service (Port 3001)
-│   ├── task-listener/     # NestJS backend service (Port 3002)
-│   └── bff/               # NestJS backend for frontend (Port 3003)
+│   └── backend/           # NestJS backend service (Port 3001)
 ├── packages/              # Shared packages (if any)
 └── package.json           # Root workspace configuration
 ```
@@ -52,16 +50,8 @@ Or run individual applications:
 cd apps/frontend
 npm run dev
 
-# Task Publisher Backend (port: 3001)
-cd apps/task-publisher
-npm run dev
-
-# Task Listener Backend (port: 3002)
-cd apps/task-listener
-npm run dev
-
-# BFF Backend (port: 3003)
-cd apps/bff
+# Backend (port: 3001)
+cd apps/backend
 npm run dev
 ```
 
@@ -77,9 +67,7 @@ Or build individual applications:
 
 ```bash
 cd apps/frontend && npm run build
-cd apps/task-publisher && npm run build
-cd apps/task-listener && npm run build
-cd apps/bff && npm run build
+cd apps/backend && npm run build
 ```
 
 ### Testing
@@ -93,9 +81,7 @@ npm test
 Run tests for individual applications:
 
 ```bash
-cd apps/task-publisher && npm test
-cd apps/task-listener && npm test
-cd apps/bff && npm test
+cd apps/backend && npm test
 ```
 
 ### Linting
@@ -113,23 +99,11 @@ npm run lint
 - **Build Output**: `apps/frontend/dist`
 - **Technology**: React 19, TypeScript, Vite
 
-### Task Publisher (NestJS)
+### Backend (NestJS)
 - **Port**: 3001
-- **Build Output**: `apps/task-publisher/dist`
+- **Build Output**: `apps/backend/dist`
 - **API Endpoint**: http://localhost:3001
-- **Purpose**: Publishes tasks to be consumed by task-listener
-
-### Task Listener (NestJS)
-- **Port**: 3002
-- **Build Output**: `apps/task-listener/dist`
-- **API Endpoint**: http://localhost:3002
-- **Purpose**: Listens for and processes tasks published by task-publisher
-
-### BFF (Backend for Frontend)
-- **Port**: 3003
-- **Build Output**: `apps/bff/dist`
-- **API Endpoint**: http://localhost:3003
-- **Purpose**: Backend for frontend - intermediary layer between frontend and backend services
+- **Purpose**: Main backend service for the application
 
 ## Project Scripts
 
