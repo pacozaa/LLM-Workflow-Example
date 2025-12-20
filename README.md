@@ -1,33 +1,64 @@
 # LLM-Workflow-Example
 
-A modern monorepo project featuring React frontend and NestJS backends.
+A PoC AI task workflow system featuring a React frontend and NestJS backend with RabbitMQ message queue and PostgreSQL database. Users can submit text to be processed by OpenAI's API asynchronously.
+
+## Architecture Overview
+
+The system follows a microservices architecture with message queue pattern:
+
+1. **User submits text** → Frontend sends to backend API
+2. **Backend publishes task** → Task saved to PostgreSQL, message published to RabbitMQ
+3. **Worker processes task** → Subscriber consumes message, calls OpenAI API
+4. **Result stored** → AI response saved to database
+5. **User views result** → Frontend polls for updates and displays result
 
 ## Project Structure
 
 ```
 .
 ├── apps/
-│   ├── frontend/          # React + Vite + TypeScript frontend
+│   ├── frontend/          # React + Vite + TypeScript frontend (Port 5173)
+│   │   ├── src/
+│   │   │   ├── pages/     # Input, TaskList, TaskDetail pages
+│   │   │   ├── services/  # API client
+│   │   │   └── types/     # TypeScript types
+│   │   └── package.json
 │   └── backend/           # NestJS backend service (Port 3001)
-├── packages/              # Shared packages (if any)
+│       ├── src/
+│       │   ├── tasks/     # Task controller, service, entity
+│       │   ├── rabbitmq/  # RabbitMQ publisher & consumer
+│       │   ├── openai/    # OpenAI service
+│       │   └── config/    # Configuration files
+│       └── package.json
+├── docker-compose.yml     # PostgreSQL & RabbitMQ services
 └── package.json           # Root workspace configuration
 ```
 
 ## Tech Stack
 
-- **Frontend**: React 19, TypeScript, Vite
-- **Backend**: NestJS 11, TypeScript, Express
+- **Frontend**: React 19, TypeScript, Vite, React Router, Axios
+- **Backend**: NestJS 11, TypeScript, TypeORM, RabbitMQ, OpenAI SDK
+- **Database**: PostgreSQL 16
+- **Message Queue**: RabbitMQ 3
 - **Package Manager**: npm with workspaces
-- **Testing**: Jest (backend), Vitest (frontend)
 
 ## Prerequisites
 
 - Node.js >= 20.x
 - npm >= 10.x
+- Docker & Docker Compose (for PostgreSQL and RabbitMQ)
+- OpenAI API Key (for AI processing)
 
 ## Getting Started
 
-### Install Dependencies
+### 1. Clone the Repository
+
+```bash
+git clone <repository-url>
+cd LLM-Workflow-Example
+```
+
+### 2. Install Dependencies
 
 Install all dependencies for the entire monorepo:
 
@@ -35,42 +66,145 @@ Install all dependencies for the entire monorepo:
 npm install
 ```
 
-### Development
+### 3. Start Infrastructure Services
 
-Run all applications in development mode:
+Start PostgreSQL and RabbitMQ using Docker Compose:
+
+```bash
+docker-compose up -d
+```
+
+This will start:
+- PostgreSQL on port 5432
+- RabbitMQ on port 5672 (AMQP)
+- RabbitMQ Management UI on port 15672 (http://localhost:15672)
+
+### 4. Configure Environment Variables
+
+**Backend Configuration:**
+
+```bash
+cd apps/backend
+cp .env.example .env
+```
+
+Edit `.env` and set your OpenAI API key:
+
+```env
+OPENAI_API_KEY=your-actual-api-key-here
+```
+
+**Frontend Configuration:**
+
+```bash
+cd apps/frontend
+cp .env.example .env
+```
+
+The default configuration should work for local development.
+
+### 5. Run the Application
+
+**Option A: Run all services together (from root):**
 
 ```bash
 npm run dev
 ```
 
-Or run individual applications:
+**Option B: Run services individually:**
 
+Backend:
 ```bash
-# Frontend (default port: 5173)
-cd apps/frontend
-npm run dev
-
-# Backend (port: 3001)
 cd apps/backend
 npm run dev
 ```
 
-### Build
+Frontend (in a new terminal):
+```bash
+cd apps/frontend
+npm run dev
+```
 
-Build all applications:
+### 6. Access the Application
+
+- **Frontend**: http://localhost:5173
+- **Backend API**: http://localhost:3001
+- **RabbitMQ Management**: http://localhost:15672 (guest/guest)
+
+## Usage
+
+1. **Submit a Task**
+   - Navigate to http://localhost:5173
+   - Enter your text in the input field
+   - Click "Submit Task"
+
+2. **View Task List**
+   - After submission, you'll be redirected to the task list
+   - The list auto-refreshes every 3 seconds
+   - Tasks show their current status (pending, processing, completed, failed)
+
+3. **View Task Details**
+   - Click on any task to view details
+   - The detail page auto-refreshes while the task is processing
+   - Once complete, the AI result will be displayed
+
+## Development
+
+### Backend Development
 
 ```bash
+cd apps/backend
+
+# Run in watch mode
+npm run dev
+
+# Run tests
+npm test
+
+# Lint code
+npm run lint
+
+# Build for production
 npm run build
 ```
 
-Or build individual applications:
+### Frontend Development
 
 ```bash
-cd apps/frontend && npm run build
-cd apps/backend && npm run build
+cd apps/frontend
+
+# Run dev server
+npm run dev
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+
+# Lint code
+npm run lint
 ```
 
-### Testing
+### Database Management
+
+The database schema is automatically synchronized in development mode (TypeORM synchronize: true).
+
+To access PostgreSQL directly:
+
+```bash
+docker exec -it llm-workflow-postgres psql -U postgres -d llm_workflow
+```
+
+### RabbitMQ Management
+
+Access the RabbitMQ Management UI at http://localhost:15672
+
+Default credentials:
+- Username: `guest`
+- Password: `guest`
+
+## Testing
 
 Run tests for all applications:
 
@@ -82,28 +216,89 @@ Run tests for individual applications:
 
 ```bash
 cd apps/backend && npm test
+cd apps/frontend && npm test
 ```
 
-### Linting
+## Building for Production
 
-Lint all applications:
+Build all applications:
 
 ```bash
-npm run lint
+npm run build
 ```
 
-## Application Details
+Build outputs:
+- Frontend: `apps/frontend/dist`
+- Backend: `apps/backend/dist`
 
-### Frontend (React + Vite)
-- **Port**: 5173 (default Vite dev server)
-- **Build Output**: `apps/frontend/dist`
-- **Technology**: React 19, TypeScript, Vite
+## Environment Variables
 
-### Backend (NestJS)
-- **Port**: 3001
-- **Build Output**: `apps/backend/dist`
-- **API Endpoint**: http://localhost:3001
-- **Purpose**: Main backend service for the application
+### Backend
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `DB_HOST` | PostgreSQL host | `localhost` |
+| `DB_PORT` | PostgreSQL port | `5432` |
+| `DB_USERNAME` | PostgreSQL username | `postgres` |
+| `DB_PASSWORD` | PostgreSQL password | `postgres` |
+| `DB_NAME` | Database name | `llm_workflow` |
+| `RABBITMQ_URL` | RabbitMQ connection URL | `amqp://guest:guest@localhost:5672` |
+| `RABBITMQ_QUEUE` | Queue name | `ai_tasks` |
+| `OPENAI_API_KEY` | OpenAI API key | *Required* |
+| `PORT` | Backend server port | `3001` |
+| `FRONTEND_URL` | Frontend URL for CORS | `http://localhost:5173` |
+
+### Frontend
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `VITE_API_URL` | Backend API URL | `http://localhost:3001` |
+
+## Troubleshooting
+
+### Database Connection Issues
+
+1. Ensure PostgreSQL is running: `docker-compose ps`
+2. Check logs: `docker-compose logs postgres`
+3. Verify connection settings in backend `.env`
+
+### RabbitMQ Connection Issues
+
+1. Ensure RabbitMQ is running: `docker-compose ps`
+2. Check logs: `docker-compose logs rabbitmq`
+3. Verify connection URL in backend `.env`
+
+### OpenAI API Issues
+
+1. Verify your API key is set correctly in backend `.env`
+2. Check backend logs for error messages
+3. Ensure your OpenAI account has available credits
+
+### Frontend Cannot Connect to Backend
+
+1. Verify backend is running on port 3001
+2. Check `VITE_API_URL` in frontend `.env`
+3. Ensure CORS is properly configured
+
+## Cleanup
+
+Stop and remove all Docker containers:
+
+```bash
+docker-compose down
+```
+
+Remove volumes (deletes all data):
+
+```bash
+docker-compose down -v
+```
+
+Clean build artifacts and dependencies:
+
+```bash
+npm run clean
+```
 
 ## Project Scripts
 
