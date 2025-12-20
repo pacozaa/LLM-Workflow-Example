@@ -9,7 +9,8 @@ A modern monorepo project featuring React frontend and NestJS backends.
 ├── apps/
 │   ├── frontend/          # React + Vite + TypeScript frontend
 │   ├── task-publisher/    # NestJS backend service (Port 3001)
-│   └── task-listener/     # NestJS backend service (Port 3002)
+│   ├── task-listener/     # NestJS backend service (Port 3002)
+│   └── bff/               # NestJS backend for frontend (Port 3003)
 ├── packages/              # Shared packages (if any)
 └── package.json           # Root workspace configuration
 ```
@@ -58,6 +59,10 @@ npm run dev
 # Task Listener Backend (port: 3002)
 cd apps/task-listener
 npm run dev
+
+# BFF Backend (port: 3003)
+cd apps/bff
+npm run dev
 ```
 
 ### Build
@@ -74,6 +79,7 @@ Or build individual applications:
 cd apps/frontend && npm run build
 cd apps/task-publisher && npm run build
 cd apps/task-listener && npm run build
+cd apps/bff && npm run build
 ```
 
 ### Testing
@@ -89,6 +95,7 @@ Run tests for individual applications:
 ```bash
 cd apps/task-publisher && npm test
 cd apps/task-listener && npm test
+cd apps/bff && npm test
 ```
 
 ### Linting
@@ -117,6 +124,12 @@ npm run lint
 - **Build Output**: `apps/task-listener/dist`
 - **API Endpoint**: http://localhost:3002
 - **Purpose**: Listens for and processes tasks published by task-publisher
+
+### BFF (Backend for Frontend)
+- **Port**: 3003
+- **Build Output**: `apps/bff/dist`
+- **API Endpoint**: http://localhost:3003
+- **Purpose**: Backend for frontend - intermediary layer between frontend and backend services
 
 ## Project Scripts
 
