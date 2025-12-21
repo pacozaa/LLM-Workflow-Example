@@ -259,7 +259,7 @@ Add the following secrets:
 | `AZURE_SUBSCRIPTION_ID` | Your Azure subscription ID | From `az account show` |
 | `POSTGRES_ADMIN_PASSWORD` | PostgreSQL password | Strong password |
 | `OPENAI_API_KEY` | OpenAI API key | Your OpenAI key |
-| `AZURE_STATIC_WEB_APPS_API_TOKEN` | Static Web Apps token | From Azure Portal |
+| `AZURE_STATIC_WEB_APPS_API_TOKEN` | Static Web Apps token | See instructions below |
 
 To get the Static Web Apps deployment token:
 1. Go to Azure Portal → Your Static Web App
@@ -302,6 +302,60 @@ The GitHub Actions workflow includes:
 - ✅ Health checks after deployment
 - ✅ Manual workflow dispatch option
 - ✅ Parallel deployment for faster builds
+
+## Security Considerations
+
+### Database Security
+
+⚠️ **Important**: The default ARM template creates a PostgreSQL server with a firewall rule that allows access from all Azure services (0.0.0.0/0). This is convenient for initial setup but **not recommended for production**.
+
+**For Production Deployments:**
+
+1. **Use Virtual Network Integration**:
+   ```bash
+   # Create a VNet-integrated deployment
+   az postgres flexible-server create \
+     --resource-group $RESOURCE_GROUP \
+     --name $POSTGRES_SERVER_NAME \
+     --vnet your-vnet \
+     --subnet your-subnet
+   ```
+
+2. **Restrict to Specific IP Ranges**:
+   ```bash
+   # Remove the allow-all rule
+   az postgres flexible-server firewall-rule delete \
+     --resource-group $RESOURCE_GROUP \
+     --name $POSTGRES_SERVER_NAME \
+     --rule-name AllowAllAzureServices
+   
+   # Add specific IP ranges
+   az postgres flexible-server firewall-rule create \
+     --resource-group $RESOURCE_GROUP \
+     --name $POSTGRES_SERVER_NAME \
+     --rule-name AllowAppService \
+     --start-ip-address <app-service-outbound-ip> \
+     --end-ip-address <app-service-outbound-ip>
+   ```
+
+3. **Use Private Endpoints** (Premium tier):
+   - Create a private endpoint for the PostgreSQL server
+   - Access database only through private network
+
+### Secret Management
+
+- **Never commit** `azure-parameters.json` with real credentials to source control
+- Use **Azure Key Vault** for production secret management
+- Rotate credentials regularly
+- Use **managed identities** where possible instead of connection strings
+
+### Additional Security Best Practices
+
+- Enable SSL/TLS enforcement for database connections
+- Use strong passwords (minimum 16 characters, mixed case, numbers, symbols)
+- Enable Azure Security Center for threat detection
+- Configure network security groups (NSGs) for additional network isolation
+- Enable Application Insights for security monitoring
 
 ## Post-Deployment Configuration
 

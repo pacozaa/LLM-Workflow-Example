@@ -143,6 +143,9 @@ jobs:
 
             HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$BACKEND_URL" || echo "000")
 
+            # Accept 200 (OK) or 404 (Not Found) as success indicators
+            # 404 is acceptable because NestJS may not have a root route defined
+            # The important thing is the server is running and responding
             if [ "$HTTP_CODE" -eq "200" ] || [ "$HTTP_CODE" -eq "404" ]; then
               echo "✅ Backend is responding (HTTP $HTTP_CODE)"
               exit 0

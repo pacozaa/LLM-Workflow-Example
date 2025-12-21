@@ -92,7 +92,8 @@
       "properties": {
         "startIpAddress": "0.0.0.0",
         "endIpAddress": "0.0.0.0"
-      }
+      },
+      "comments": "WARNING: This allows access from all Azure services. For production, use Virtual Network integration or restrict to specific IP ranges."
     },
     {
       "type": "Microsoft.ServiceBus/namespaces",
@@ -230,7 +231,8 @@
           "apiLocation": "",
           "outputLocation": "dist"
         }
-      }
+      },
+      "comments": "Empty repositoryUrl and branch are intentional - deployment handled by GitHub Actions or Azure CLI"
     }
   ],
   "outputs": {
