@@ -20,7 +20,7 @@
 │ STEP 2: Backend API (NestJS - Port 3001)                            │
 │   TasksController.create()                                          │
 │     ├─► Create Task in PostgreSQL (status: PENDING)                 │
-│     └─► Publish message to RabbitMQ queue                           │
+│     └─► Publish message to Azure Service Bus queue                  │
 │                                                                      │
 │   Returns: Task object with ID and PENDING status                   │
 └─────────────────────────────────────────────────────────────────────┘
@@ -28,10 +28,10 @@
                    ┌─────────────┴─────────────┐
                    ▼                           ▼
     ┌──────────────────────────┐   ┌──────────────────────────┐
-    │   PostgreSQL             │   │   RabbitMQ               │
-    │   (Port 5432)            │   │   (Port 5672)            │
+    │   PostgreSQL             │   │   Azure Service Bus      │
+    │   (Port 5432)            │   │                          │
     │                          │   │                          │
-    │   tasks table:           │   │   ai_tasks queue:        │
+    │   tasks table:           │   │   ai-tasks queue:        │
     │   - id (uuid)            │   │   - taskId               │
     │   - userInput            │   │   - userInput            │
     │   - status: PENDING      │   │                          │
@@ -86,14 +86,14 @@
 ### Backend
 - **NestJS 11**: Node.js framework
 - **TypeORM**: ORM for PostgreSQL
-- **amqplib**: RabbitMQ client
+- **@azure/service-bus**: Azure Service Bus client
 - **OpenAI SDK**: AI processing
 - **class-validator**: Input validation
 
 ### Infrastructure
 - **PostgreSQL 16**: Relational database
-- **RabbitMQ 3**: Message queue
-- **Docker Compose**: Container orchestration
+- **Azure Service Bus**: Message queue
+- **Docker Compose**: Container orchestration (local development)
 
 ## API Endpoints
 
@@ -170,7 +170,7 @@ LLM-Workflow-Example/
 │   │   └── src/
 │   │       ├── config/           # Configuration files
 │   │       │   ├── database.config.ts
-│   │       │   ├── rabbitmq.config.ts
+│   │       │   ├── servicebus.config.ts
 │   │       │   └── openai.config.ts
 │   │       ├── tasks/            # Task management
 │   │       │   ├── entities/     # TypeORM entities
@@ -178,10 +178,10 @@ LLM-Workflow-Example/
 │   │       │   ├── tasks.controller.ts
 │   │       │   ├── tasks.service.ts
 │   │       │   └── tasks.module.ts
-│   │       ├── rabbitmq/         # Message queue
-│   │       │   ├── rabbitmq.service.ts (publisher)
+│   │       ├── servicebus/       # Azure Service Bus
+│   │       │   ├── servicebus.service.ts (publisher)
 │   │       │   ├── task-consumer.service.ts (subscriber)
-│   │       │   └── rabbitmq.module.ts
+│   │       │   └── servicebus.module.ts
 │   │       ├── openai/           # AI service
 │   │       │   ├── openai.service.ts
 │   │       │   └── openai.module.ts
@@ -203,15 +203,19 @@ LLM-Workflow-Example/
 
 ## Development Workflow
 
+**Local Development:**
 1. Start infrastructure: `docker-compose up -d`
-2. Configure backend `.env` with OpenAI API key
+2. Configure backend `.env` with Azure Service Bus connection string and OpenAI API key
 3. Start backend: `cd apps/backend && npm run dev`
 4. Start frontend: `cd apps/frontend && npm run dev`
 5. Open browser: http://localhost:5173
 
+**Azure Deployment:**
+See `docs/deployment/` for Azure deployment instructions.
+
 ## Key Features
 
-✅ Asynchronous task processing with RabbitMQ
+✅ Asynchronous task processing with Azure Service Bus
 ✅ Real-time status updates with auto-refresh
 ✅ Clean separation of concerns (publisher/consumer pattern)
 ✅ Type-safe with TypeScript

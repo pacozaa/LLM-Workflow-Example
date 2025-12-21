@@ -3,14 +3,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Task, TaskStatus } from './entities/task.entity';
 import { CreateTaskDto } from './dto/create-task.dto';
-import { RabbitmqService } from '../rabbitmq/rabbitmq.service';
+import { ServicebusService } from '../servicebus/servicebus.service';
 
 @Injectable()
 export class TasksService {
   constructor(
     @InjectRepository(Task)
     private taskRepository: Repository<Task>,
-    private rabbitmqService: RabbitmqService,
+    private servicebusService: ServicebusService,
   ) {}
 
   async create(createTaskDto: CreateTaskDto): Promise<Task> {
@@ -22,8 +22,11 @@ export class TasksService {
 
     const savedTask = await this.taskRepository.save(task);
 
-    // Publish to RabbitMQ for async processing
-    await this.rabbitmqService.publishTask(savedTask.id, savedTask.userInput);
+    // Publish to Azure Service Bus for async processing
+    await this.servicebusService.publishTask(
+      savedTask.id,
+      savedTask.userInput,
+    );
 
     return savedTask;
   }

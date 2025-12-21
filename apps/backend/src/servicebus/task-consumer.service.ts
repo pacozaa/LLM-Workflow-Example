@@ -1,46 +1,69 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import {
+  ServiceBusClient,
+  ServiceBusReceiver,
+  ProcessErrorArgs,
+} from '@azure/service-bus';
 import { Task, TaskStatus } from '../tasks/entities/task.entity';
-import { RabbitmqService } from './rabbitmq.service';
 import { OpenAiService } from '../openai/openai.service';
-import { ConsumeMessage } from 'amqplib';
 
 @Injectable()
-export class TaskConsumerService implements OnModuleInit {
+export class TaskConsumerService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(TaskConsumerService.name);
+  private client: ServiceBusClient;
+  private receiver: ServiceBusReceiver;
+  private readonly queueName: string;
 
   constructor(
+    private configService: ConfigService,
     @InjectRepository(Task)
     private taskRepository: Repository<Task>,
-    private rabbitmqService: RabbitmqService,
     private openaiService: OpenAiService,
-  ) {}
+  ) {
+    this.queueName = this.configService.get<string>('servicebus.queueName');
+  }
 
   async onModuleInit() {
+    const connectionString = this.configService.get<string>(
+      'servicebus.connectionString',
+    );
+
+    this.client = new ServiceBusClient(connectionString);
+    this.receiver = this.client.createReceiver(this.queueName);
+
     await this.startConsuming();
+    this.logger.log('Task consumer initialized');
   }
 
   private async startConsuming() {
-    const channelWrapper = this.rabbitmqService.getChannelWrapper();
-    const queueName = this.rabbitmqService.getQueueName();
+    const processMessage = async (message) => {
+      try {
+        const taskData = message.body;
+        this.logger.log(`Processing task ${taskData.taskId}`);
 
-    await channelWrapper.addSetup(async (channel) => {
-      await channel.consume(queueName, async (msg: ConsumeMessage | null) => {
-        if (msg) {
-          try {
-            const content = JSON.parse(msg.content.toString());
-            await this.processTask(content.taskId, content.userInput);
-            channel.ack(msg);
-          } catch (error) {
-            this.logger.error('Error processing message', error);
-            channel.nack(msg, false, false); // Don't requeue failed messages
-          }
-        }
-      });
+        await this.processTask(taskData.taskId, taskData.userInput);
+      } catch (error) {
+        this.logger.error(`Error processing message`, error);
+        // Message will be abandoned and go to dead letter queue after max delivery attempts
+        throw error;
+      }
+    };
+
+    const processError = async (args: ProcessErrorArgs) => {
+      this.logger.error(
+        `Error from source ${args.errorSource}: ${args.error}`,
+      );
+    };
+
+    this.receiver.subscribe({
+      processMessage,
+      processError,
     });
 
-    this.logger.log('Started consuming messages from queue');
+    this.logger.log('Started consuming messages from Service Bus');
   }
 
   private async processTask(taskId: string, userInput: string) {
@@ -89,5 +112,11 @@ export class TaskConsumerService implements OnModuleInit {
       return message.replace(/\b[A-Za-z0-9_-]{20,}\b/g, '[REDACTED]');
     }
     return 'An unexpected error occurred during processing';
+  }
+
+  async onModuleDestroy() {
+    await this.receiver.close();
+    await this.client.close();
+    this.logger.log('Service Bus consumer connection closed');
   }
 }
