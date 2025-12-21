@@ -4,18 +4,18 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TasksModule } from './tasks/tasks.module';
-import { RabbitmqModule } from './rabbitmq/rabbitmq.module';
+import { ServicebusModule } from './servicebus/servicebus.module';
 import { OpenAiModule } from './openai/openai.module';
-import { TaskConsumerService } from './rabbitmq/task-consumer.service';
+import { TaskConsumerService } from './servicebus/task-consumer.service';
 import databaseConfig from './config/database.config';
-import rabbitmqConfig from './config/rabbitmq.config';
+import servicebusConfig from './config/servicebus.config';
 import openaiConfig from './config/openai.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [databaseConfig, rabbitmqConfig, openaiConfig],
+      load: [databaseConfig, servicebusConfig, openaiConfig],
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
@@ -23,7 +23,7 @@ import openaiConfig from './config/openai.config';
         configService.get('database'),
     }),
     TasksModule,
-    RabbitmqModule,
+    ServicebusModule,
     OpenAiModule,
   ],
   controllers: [AppController],

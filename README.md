@@ -1,13 +1,13 @@
 # LLM-Workflow-Example
 
-A PoC AI task workflow system featuring a React frontend and NestJS backend with RabbitMQ message queue and PostgreSQL database. Users can submit text to be processed by OpenAI's API asynchronously.
+A PoC AI task workflow system featuring a React frontend and NestJS backend with Azure Service Bus (or RabbitMQ) message queue and PostgreSQL database. Users can submit text to be processed by OpenAI's API asynchronously.
 
 ## Architecture Overview
 
 The system follows a microservices architecture with message queue pattern:
 
 1. **User submits text** → Frontend sends to backend API
-2. **Backend publishes task** → Task saved to PostgreSQL, message published to RabbitMQ
+2. **Backend publishes task** → Task saved to PostgreSQL, message published to Azure Service Bus
 3. **Worker processes task** → Subscriber consumes message, calls OpenAI API
 4. **Result stored** → AI response saved to database
 5. **User views result** → Frontend polls for updates and displays result
@@ -26,28 +26,30 @@ The system follows a microservices architecture with message queue pattern:
 │   └── backend/           # NestJS backend service (Port 3001)
 │       ├── src/
 │       │   ├── tasks/     # Task controller, service, entity
-│       │   ├── rabbitmq/  # RabbitMQ publisher & consumer
+│       │   ├── servicebus/ # Azure Service Bus publisher & consumer
+│       │   ├── rabbitmq/  # RabbitMQ publisher & consumer (legacy)
 │       │   ├── openai/    # OpenAI service
 │       │   └── config/    # Configuration files
 │       └── package.json
-├── docker-compose.yml     # PostgreSQL & RabbitMQ services
+├── docker-compose.yml     # PostgreSQL & RabbitMQ services (for local dev)
 └── package.json           # Root workspace configuration
 ```
 
 ## Tech Stack
 
 - **Frontend**: React 19, TypeScript, Vite, React Router, Axios
-- **Backend**: NestJS 11, TypeScript, TypeORM, RabbitMQ, OpenAI SDK
+- **Backend**: NestJS 11, TypeScript, TypeORM, Azure Service Bus, OpenAI SDK
 - **Database**: PostgreSQL 16
-- **Message Queue**: RabbitMQ 3
+- **Message Queue**: Azure Service Bus (production) or RabbitMQ 3 (local development)
 - **Package Manager**: npm with workspaces
 
 ## Prerequisites
 
 - Node.js >= 20.x
 - npm >= 10.x
-- Docker & Docker Compose (for PostgreSQL and RabbitMQ)
+- Docker & Docker Compose (for PostgreSQL and optional RabbitMQ for local dev)
 - OpenAI API Key (for AI processing)
+- Azure Service Bus namespace (for production) or RabbitMQ (for local development)
 
 ## Getting Started
 
@@ -68,6 +70,8 @@ npm install
 
 ### 3. Start Infrastructure Services
 
+**For Local Development with RabbitMQ:**
+
 Start PostgreSQL and RabbitMQ using Docker Compose:
 
 ```bash
@@ -78,6 +82,10 @@ This will start:
 - PostgreSQL on port 5432
 - RabbitMQ on port 5672 (AMQP)
 - RabbitMQ Management UI on port 15672 (http://localhost:15672)
+
+**For Azure Service Bus:**
+
+No local infrastructure needed. Configure your Azure Service Bus connection string in the environment variables.
 
 ### 4. Configure Environment Variables
 
@@ -90,8 +98,18 @@ cp .env.example .env
 
 Edit `.env` and set your OpenAI API key:
 
+**For Local Development (RabbitMQ):**
 ```env
 OPENAI_API_KEY=your-actual-api-key-here
+RABBITMQ_URL=amqp://guest:guest@localhost:5672
+RABBITMQ_QUEUE=ai_tasks
+```
+
+**For Azure Service Bus:**
+```env
+OPENAI_API_KEY=your-actual-api-key-here
+AZURE_SERVICE_BUS_CONNECTION_STRING=Endpoint=sb://your-namespace.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=your-key
+AZURE_SERVICE_BUS_QUEUE_NAME=ai-tasks
 ```
 
 **Frontend Configuration:**
@@ -242,11 +260,15 @@ Build outputs:
 | `DB_USERNAME` | PostgreSQL username | `postgres` |
 | `DB_PASSWORD` | PostgreSQL password | `postgres` |
 | `DB_NAME` | Database name | `llm_workflow` |
-| `RABBITMQ_URL` | RabbitMQ connection URL | `amqp://guest:guest@localhost:5672` |
-| `RABBITMQ_QUEUE` | Queue name | `ai_tasks` |
+| `AZURE_SERVICE_BUS_CONNECTION_STRING` | Azure Service Bus connection string | *Optional for production* |
+| `AZURE_SERVICE_BUS_QUEUE_NAME` | Azure Service Bus queue name | `ai-tasks` |
+| `RABBITMQ_URL` | RabbitMQ connection URL (fallback for local dev) | `amqp://guest:guest@localhost:5672` |
+| `RABBITMQ_QUEUE` | Queue name (fallback for local dev) | `ai_tasks` |
 | `OPENAI_API_KEY` | OpenAI API key | *Required* |
 | `PORT` | Backend server port | `3001` |
 | `FRONTEND_URL` | Frontend URL for CORS | `http://localhost:5173` |
+
+**Note**: The application will use Azure Service Bus if `AZURE_SERVICE_BUS_CONNECTION_STRING` is set, otherwise it will fall back to RabbitMQ configuration.
 
 ### Frontend
 
@@ -262,11 +284,20 @@ Build outputs:
 2. Check logs: `docker-compose logs postgres`
 3. Verify connection settings in backend `.env`
 
-### RabbitMQ Connection Issues
+### Message Queue Connection Issues
+
+**For RabbitMQ (Local Development):**
 
 1. Ensure RabbitMQ is running: `docker-compose ps`
 2. Check logs: `docker-compose logs rabbitmq`
 3. Verify connection URL in backend `.env`
+
+**For Azure Service Bus (Production):**
+
+1. Verify your connection string is correct
+2. Check that the queue exists in your Service Bus namespace
+3. Ensure proper permissions are configured
+4. Check Azure Service Bus logs in Azure Portal
 
 ### OpenAI API Issues
 
