@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -11,7 +11,7 @@ import { Task, TaskStatus } from '../tasks/entities/task.entity';
 import { OpenAiService } from '../openai/openai.service';
 
 @Injectable()
-export class TaskConsumerService implements OnModuleInit {
+export class TaskConsumerService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(TaskConsumerService.name);
   private client: ServiceBusClient;
   private receiver: ServiceBusReceiver;
