@@ -205,7 +205,7 @@ az group delete --name $RESOURCE_GROUP --yes --no-wait
 
 - **Detailed guide**: [README.md](README.md)
 - **GitHub Issues**: [Report a problem](https://github.com/pacozaa/LLM-Workflow-Example/issues)
-- **Azure Docs**: [docs.microsoft.com/azure](https://docs.microsoft.com/azure)
+- **Azure Docs**: [learn.microsoft.com/azure](https://learn.microsoft.com/azure)
 
 ---
 

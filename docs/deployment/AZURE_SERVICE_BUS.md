@@ -432,9 +432,9 @@ If issues occur, you can quickly switch back to RabbitMQ:
 
 ## Additional Resources
 
-- [Azure Service Bus Documentation](https://docs.microsoft.com/azure/service-bus-messaging/)
+- [Azure Service Bus Documentation](https://learn.microsoft.com/azure/service-bus-messaging/)
 - [Azure Service Bus SDK for JavaScript](https://github.com/Azure/azure-sdk-for-js/tree/main/sdk/servicebus/service-bus)
-- [Migrating from RabbitMQ to Azure Service Bus](https://docs.microsoft.com/azure/service-bus-messaging/service-bus-migrate-from-rabbitmq)
+- [Migrating from RabbitMQ to Azure Service Bus](https://learn.microsoft.com/azure/service-bus-messaging/service-bus-migrate-from-rabbitmq)
 
 ---
 

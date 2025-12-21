@@ -187,11 +187,11 @@ Follow instructions in [README.md](README.md#configure-custom-domain-optional)
 
 ## 📖 Additional Resources
 
-- [Azure App Service Documentation](https://docs.microsoft.com/azure/app-service/)
-- [Azure Static Web Apps Documentation](https://docs.microsoft.com/azure/static-web-apps/)
-- [Azure Database for PostgreSQL Documentation](https://docs.microsoft.com/azure/postgresql/)
-- [Azure Service Bus Documentation](https://docs.microsoft.com/azure/service-bus-messaging/)
-- [ARM Template Reference](https://docs.microsoft.com/azure/templates/)
+- [Azure App Service Documentation](https://learn.microsoft.com/azure/app-service/)
+- [Azure Static Web Apps Documentation](https://learn.microsoft.com/azure/static-web-apps/)
+- [Azure Database for PostgreSQL Documentation](https://learn.microsoft.com/azure/postgresql/)
+- [Azure Service Bus Documentation](https://learn.microsoft.com/azure/service-bus-messaging/)
+- [ARM Template Reference](https://learn.microsoft.com/azure/templates/)
 - [GitHub Actions Documentation](https://docs.github.com/actions)
 
 ## 🎯 Next Steps

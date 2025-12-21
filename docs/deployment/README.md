@@ -50,7 +50,7 @@ The Azure deployment uses the following services:
 Before deploying, ensure you have:
 
 1. **Azure Account**: Active Azure subscription ([Create free account](https://azure.microsoft.com/free/))
-2. **Azure CLI**: Version 2.40.0 or later ([Install guide](https://docs.microsoft.com/cli/azure/install-azure-cli))
+2. **Azure CLI**: Version 2.40.0 or later ([Install guide](https://learn.microsoft.com/cli/azure/install-azure-cli))
 3. **OpenAI API Key**: From [OpenAI Platform](https://platform.openai.com/api-keys)
 4. **Git**: For cloning the repository
 5. **Node.js**: Version 20.x or later (for local building)
@@ -535,11 +535,11 @@ az group delete \
 
 ## Additional Resources
 
-- [Azure App Service Documentation](https://docs.microsoft.com/azure/app-service/)
-- [Azure Static Web Apps Documentation](https://docs.microsoft.com/azure/static-web-apps/)
-- [Azure Database for PostgreSQL Documentation](https://docs.microsoft.com/azure/postgresql/)
-- [Azure Service Bus Documentation](https://docs.microsoft.com/azure/service-bus-messaging/)
-- [ARM Template Reference](https://docs.microsoft.com/azure/templates/)
+- [Azure App Service Documentation](https://learn.microsoft.com/azure/app-service/)
+- [Azure Static Web Apps Documentation](https://learn.microsoft.com/azure/static-web-apps/)
+- [Azure Database for PostgreSQL Documentation](https://learn.microsoft.com/azure/postgresql/)
+- [Azure Service Bus Documentation](https://learn.microsoft.com/azure/service-bus-messaging/)
+- [ARM Template Reference](https://learn.microsoft.com/azure/templates/)
 
 ## Support
 
