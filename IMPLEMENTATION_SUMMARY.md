@@ -8,8 +8,8 @@ This PR implements a complete PoC AI task workflow system that demonstrates asyn
 
 ### 1. Infrastructure (Docker Compose)
 - PostgreSQL 16 database for task persistence
-- RabbitMQ 3 message queue for async processing
-- Fully containerized with health checks
+- Azure Service Bus for async processing (cloud-based message queue)
+- Fully containerized local database with health checks
 - Easy setup with single command: `docker-compose up -d`
 
 ### 2. Backend (NestJS)
@@ -20,7 +20,7 @@ This PR implements a complete PoC AI task workflow system that demonstrates asyn
   - GET /tasks - List all tasks
   - GET /tasks/:id - Get task details
   
-- **RabbitMQ Module**: Message queue integration
+- **Azure Service Bus Module**: Message queue integration
   - Publisher service for sending tasks to queue
   - Consumer service for processing tasks
   - Auto-reconnect and error handling
@@ -32,7 +32,7 @@ This PR implements a complete PoC AI task workflow system that demonstrates asyn
   
 - **Config Module**: Centralized configuration
   - Database connection settings
-  - RabbitMQ connection settings
+  - Azure Service Bus connection settings
   - OpenAI API configuration
 
 #### Database Schema
@@ -52,7 +52,7 @@ tasks table:
 apps/backend/src/
 ├── config/                   # Configuration files
 │   ├── database.config.ts
-│   ├── rabbitmq.config.ts
+│   ├── servicebus.config.ts
 │   └── openai.config.ts
 ├── tasks/                    # Task management
 │   ├── entities/
@@ -62,10 +62,10 @@ apps/backend/src/
 │   ├── tasks.controller.ts
 │   ├── tasks.service.ts
 │   └── tasks.module.ts
-├── rabbitmq/                 # Message queue
-│   ├── rabbitmq.service.ts
+├── servicebus/               # Azure Service Bus
+│   ├── servicebus.service.ts
 │   ├── task-consumer.service.ts
-│   └── rabbitmq.module.ts
+│   └── servicebus.module.ts
 ├── openai/                   # AI service
 │   ├── openai.service.ts
 │   └── openai.module.ts
@@ -131,7 +131,7 @@ Created comprehensive documentation:
 ## Technical Highlights
 
 ### Architecture Patterns
-✅ **Publisher-Subscriber Pattern**: RabbitMQ decouples task submission from processing
+✅ **Publisher-Subscriber Pattern**: Azure Service Bus decouples task submission from processing
 ✅ **Repository Pattern**: TypeORM provides clean data access layer
 ✅ **Module Pattern**: NestJS modules organize code by feature
 ✅ **Type Safety**: TypeScript across frontend and backend
@@ -156,7 +156,7 @@ After code review, addressed:
 
 1. **User submits text** → Frontend POST to `/tasks`
 2. **Backend creates task** → Saves to PostgreSQL with status "pending"
-3. **Backend publishes** → Message sent to RabbitMQ queue
+3. **Backend publishes** → Message sent to Azure Service Bus queue
 4. **Consumer picks up** → Updates status to "processing"
 5. **OpenAI processes** → Calls GPT-3.5-turbo with user input
 6. **Result saved** → Updates task with AI response, status "completed"
@@ -174,7 +174,7 @@ After code review, addressed:
 
 ### Backend
 - @nestjs/typeorm, typeorm, pg - Database ORM
-- @nestjs/microservices, amqplib, amqp-connection-manager - RabbitMQ
+- @azure/service-bus - Azure Service Bus client
 - openai - OpenAI API client
 - @nestjs/config - Configuration management
 - class-validator, class-transformer - Input validation
@@ -193,8 +193,8 @@ DB_PORT=5432
 DB_USERNAME=postgres
 DB_PASSWORD=postgres
 DB_NAME=llm_workflow
-RABBITMQ_URL=amqp://guest:guest@localhost:5672
-RABBITMQ_QUEUE=ai_tasks
+AZURE_SERVICE_BUS_CONNECTION_STRING=Endpoint=sb://your-namespace.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=your-key  # REQUIRED
+AZURE_SERVICE_BUS_QUEUE_NAME=ai-tasks
 PORT=3001
 FRONTEND_URL=http://localhost:5173
 ```
@@ -207,7 +207,7 @@ VITE_API_URL=http://localhost:3001
 ## How to Use
 
 1. Start infrastructure: `docker-compose up -d`
-2. Configure OpenAI API key in `apps/backend/.env`
+2. Configure OpenAI API key and Azure Service Bus connection string in `apps/backend/.env`
 3. Run all: `npm run dev`
 4. Open browser: http://localhost:5173
 5. Submit a question and watch it process!

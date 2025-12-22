@@ -130,7 +130,6 @@ npm run dev
 
 - **Frontend**: http://localhost:5173
 - **Backend API**: http://localhost:3001
-- **RabbitMQ Management**: http://localhost:15672 (guest/guest)
 
 ## Usage
 

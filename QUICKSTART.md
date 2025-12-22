@@ -23,18 +23,18 @@ This will install dependencies for the entire monorepo workspace.
 
 ### 2. Start Infrastructure
 
-Start PostgreSQL and RabbitMQ services using Docker Compose:
+Start PostgreSQL using Docker Compose:
 
 ```bash
 docker-compose up -d
 ```
 
-Verify the services are running:
+Verify the service is running:
 ```bash
 docker-compose ps
 ```
 
-You should see both `llm-workflow-postgres` and `llm-workflow-rabbitmq` running.
+You should see `llm-workflow-postgres` running.
 
 ### 3. Configure Backend
 
@@ -44,12 +44,14 @@ cd apps/backend
 cp .env.example .env
 ```
 
-Edit `apps/backend/.env` and add your OpenAI API key:
+Edit `apps/backend/.env` and add your OpenAI API key and Azure Service Bus connection string:
 ```env
 OPENAI_API_KEY=sk-your-actual-api-key-here
+AZURE_SERVICE_BUS_CONNECTION_STRING=Endpoint=sb://your-namespace.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=your-key
+AZURE_SERVICE_BUS_QUEUE_NAME=ai-tasks
 ```
 
-**Important:** Keep the other settings as-is for local development.
+**Important:** Keep the other settings as-is for local development. You'll need an Azure Service Bus namespace with a queue named `ai-tasks`.
 
 ### 4. Configure Frontend (Optional)
 
@@ -88,7 +90,6 @@ Once both services are running:
 
 - **Frontend**: Open http://localhost:5173 in your browser
 - **Backend API**: http://localhost:3001
-- **RabbitMQ Management**: http://localhost:15672 (guest/guest)
 
 ## First Task Test
 
@@ -126,22 +127,15 @@ docker-compose up -d postgres
 docker-compose logs postgres
 ```
 
-### "Connection refused to RabbitMQ" Error
+### "Connection failed to Azure Service Bus" Error
 
-**Cause:** RabbitMQ is not running or not ready.
+**Cause:** Azure Service Bus connection string is invalid or queue doesn't exist.
 
 **Solution:**
-```bash
-# Check if RabbitMQ container is running
-docker-compose ps
-
-# If not running, start it
-docker-compose up -d rabbitmq
-
-# Wait for RabbitMQ to be fully started (check logs)
-docker-compose logs -f rabbitmq
-# Wait until you see "Server startup complete"
-```
+1. Verify your Azure Service Bus connection string is correct in `apps/backend/.env`
+2. Check that the queue exists in your Service Bus namespace (default name: `ai-tasks`)
+3. Ensure your Service Bus namespace is accessible
+4. Check backend logs for specific error messages
 
 ### Frontend "Network Error" or Cannot Connect
 
@@ -154,13 +148,14 @@ docker-compose logs -f rabbitmq
 
 ### Tasks Stuck in PENDING Status
 
-**Cause:** RabbitMQ consumer is not running or OpenAI API issue.
+**Cause:** Azure Service Bus consumer is not running or OpenAI API issue.
 
 **Solution:**
 1. Check backend logs for errors
 2. Verify OpenAI API key is valid
-3. Check RabbitMQ has messages: http://localhost:15672 → Queues → ai_tasks
-4. Restart the backend to restart the consumer
+3. Verify Azure Service Bus connection string is correct
+4. Check that the queue exists in Azure Service Bus
+5. Restart the backend to restart the consumer
 
 ## Development Tips
 
@@ -177,12 +172,12 @@ SELECT id, status, created_at FROM tasks ORDER BY created_at DESC;
 \q
 ```
 
-### View RabbitMQ Queue
+### Monitor Azure Service Bus
 
-1. Open http://localhost:15672
-2. Login with username: `guest`, password: `guest`
-3. Go to **Queues** tab
-4. Click on `ai_tasks` queue to see messages
+1. Open [Azure Portal](https://portal.azure.com)
+2. Navigate to your Service Bus namespace
+3. Go to **Queues** section
+4. Click on your queue (e.g., `ai-tasks`) to see messages and metrics
 
 ### Clear All Data
 
