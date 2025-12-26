@@ -26,12 +26,12 @@ This will install dependencies for the entire monorepo workspace.
 Start PostgreSQL using Docker Compose:
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 Verify the service is running:
 ```bash
-docker-compose ps
+docker compose ps
 ```
 
 You should see `llm-workflow-postgres` running.
@@ -118,13 +118,13 @@ Once both services are running:
 **Solution:**
 ```bash
 # Check if PostgreSQL container is running
-docker-compose ps
+docker compose ps
 
 # If not running, start it
-docker-compose up -d postgres
+docker compose up -d postgres
 
 # Check logs for errors
-docker-compose logs postgres
+docker compose logs postgres
 ```
 
 ### "Connection failed to Azure Service Bus" Error
@@ -183,13 +183,13 @@ SELECT id, status, created_at FROM tasks ORDER BY created_at DESC;
 
 ```bash
 # Stop services
-docker-compose down
+docker compose down
 
 # Remove volumes (deletes all data)
-docker-compose down -v
+docker compose down -v
 
 # Restart
-docker-compose up -d
+docker compose up -d
 ```
 
 ### Hot Reload
@@ -212,12 +212,12 @@ Press `Ctrl+C` in the terminal(s) running the application.
 
 To stop infrastructure:
 ```bash
-docker-compose down
+docker compose down
 ```
 
 To stop and remove all data:
 ```bash
-docker-compose down -v
+docker compose down -v
 ```
 
 ## Getting Help
@@ -225,5 +225,5 @@ docker-compose down -v
 If you encounter issues:
 1. Check the troubleshooting section above
 2. Review application logs in the terminal
-3. Check Docker logs: `docker-compose logs`
+3. Check Docker logs: `docker compose logs`
 4. Review the README.md and ARCHITECTURE.md files
