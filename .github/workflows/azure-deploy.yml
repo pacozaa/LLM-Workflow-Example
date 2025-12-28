@@ -49,12 +49,12 @@ jobs:
             --name ${{ env.AZURE_RESOURCE_GROUP }} \
             --location eastus
 
-      - name: Deploy ARM Template
+      - name: Deploy Bicep Template
         id: deploy-arm
         uses: azure/arm-deploy@v2
         with:
           resourceGroupName: ${{ env.AZURE_RESOURCE_GROUP }}
-          template: ./docs/deployment/azure-template.json
+          template: ./docs/deployment/azure-template.bicep
           parameters: >
             projectName=llmworkflow
             location=eastus

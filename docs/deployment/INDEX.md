@@ -1,6 +1,6 @@
 # Azure Deployment Documentation Index
 
-This directory contains comprehensive documentation for deploying the LLM Workflow Example application to Microsoft Azure using Azure Resource Manager (ARM) templates.
+This directory contains comprehensive documentation for deploying the LLM Workflow Example application to Microsoft Azure using Bicep templates.
 
 ## 📚 Documentation Files
 
@@ -46,8 +46,8 @@ Includes:
 
 ## 🏗️ Infrastructure Files
 
-### 1. [azure-template.json](azure-template.json) - ARM Template
-The Azure Resource Manager template that defines all infrastructure resources:
+### 1. [azure-template.bicep](azure-template.bicep) - Bicep Template
+The Bicep template that defines all infrastructure resources:
 
 - **Azure Database for PostgreSQL (Flexible Server)**: Managed database service
 - **Azure Service Bus**: Message queue (replaces RabbitMQ)
@@ -55,8 +55,8 @@ The Azure Resource Manager template that defines all infrastructure resources:
 - **Azure App Service (Linux)**: Backend API hosting
 - **Azure Static Web Apps**: Frontend hosting
 
-### 2. [azure-parameters.json](azure-parameters.json) - Parameters File
-Template parameters file for customizing the deployment:
+### 2. [azure-parameters.bicepparam](azure-parameters.bicepparam) - Parameters File
+Bicep parameters file for customizing the deployment:
 
 - Project name
 - Location (Azure region)
@@ -163,15 +163,15 @@ Approximate monthly costs for the deployment (US East region):
 ## 🔧 Customization
 
 ### Change Azure Region
-Edit `location` parameter in `azure-parameters.json` or during deployment:
-```json
-"location": { "value": "westus2" }
+Edit `location` parameter in `azure-parameters.bicepparam` or during deployment:
+```bicep
+param location = 'westus2'
 ```
 
 Available regions: eastus, westus2, centralus, northeurope, westeurope, etc.
 
 ### Scale Up Resources
-Modify SKUs in `azure-template.json`:
+Modify SKUs in `azure-template.bicep`:
 - **App Service**: Change `B1` to `P1V2` or higher
 - **PostgreSQL**: Change `Standard_B1ms` to `Standard_D2s_v3` or higher
 - **Service Bus**: Change `Basic` to `Standard` or `Premium`
@@ -191,7 +191,7 @@ Follow instructions in [README.md](README.md#configure-custom-domain-optional)
 - [Azure Static Web Apps Documentation](https://learn.microsoft.com/azure/static-web-apps/)
 - [Azure Database for PostgreSQL Documentation](https://learn.microsoft.com/azure/postgresql/)
 - [Azure Service Bus Documentation](https://learn.microsoft.com/azure/service-bus-messaging/)
-- [ARM Template Reference](https://learn.microsoft.com/azure/templates/)
+- [Bicep Documentation](https://learn.microsoft.com/azure/azure-resource-manager/bicep/)
 - [GitHub Actions Documentation](https://docs.github.com/actions)
 
 ## 🎯 Next Steps

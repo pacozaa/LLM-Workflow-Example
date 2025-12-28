@@ -25,14 +25,14 @@ LOCATION="eastus"
 az group create --name $RESOURCE_GROUP --location $LOCATION
 
 # 4. Edit parameters file
-nano docs/deployment/azure-parameters.json
+nano docs/deployment/azure-parameters.bicepparam
 # Update: postgresAdminPassword and openaiApiKey
 
 # 5. Deploy infrastructure
 az deployment group create \
   --resource-group $RESOURCE_GROUP \
-  --template-file docs/deployment/azure-template.json \
-  --parameters docs/deployment/azure-parameters.json
+  --template-file docs/deployment/azure-template.bicep \
+  --parameters docs/deployment/azure-parameters.bicepparam
 
 # 6. Build and deploy backend
 cd apps/backend
