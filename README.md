@@ -215,6 +215,8 @@ docker exec -it llm-workflow-postgres psql -U postgres -d llm_workflow
 
 ## Testing
 
+### Unit and Integration Tests
+
 Run tests for all applications:
 
 ```bash
@@ -227,6 +229,25 @@ Run tests for individual applications:
 cd apps/backend && npm test
 cd apps/frontend && npm test
 ```
+
+### API Testing with Postman
+
+A comprehensive Postman collection is available for testing the backend API:
+
+- **Collection File**: `LLM-Workflow-Backend.postman_collection.json`
+- **Documentation**: See [POSTMAN_GUIDE.md](./POSTMAN_GUIDE.md) for detailed instructions
+
+The collection includes:
+- All API endpoints (health check, create task, get tasks)
+- Automated test scripts with assertions
+- Validation tests for error scenarios
+- Collection variables for easy configuration
+
+To use:
+1. Import `LLM-Workflow-Backend.postman_collection.json` into Postman
+2. Ensure the backend is running on `http://localhost:3001`
+3. Run the collection or individual requests
+4. View test results in Postman
 
 ## Building for Production
 
