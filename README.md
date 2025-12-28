@@ -12,6 +12,23 @@ The system follows a microservices architecture with message queue pattern:
 4. **Result stored** → AI response saved to database
 5. **User views result** → Frontend polls for updates and displays result
 
+## Screenshots
+
+### Input Page
+The main page where users submit their text for AI processing:
+
+![Input Page](docs/screenshots/input-page.png)
+
+### Task List
+View all submitted tasks with their current status (pending, processing, completed, or failed):
+
+![Task List](docs/screenshots/task-list-page.png)
+
+### Task Detail
+Detailed view of a task showing user input and processing status:
+
+![Task Detail](docs/screenshots/task-detail-page.png)
+
 ## Project Structure
 
 ```
