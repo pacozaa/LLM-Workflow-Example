@@ -1,6 +1,13 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.39.26.7824",
+      "templateHash": "7238053639324576218"
+    }
+  },
   "parameters": {
     "projectName": {
       "type": "string",
@@ -37,11 +44,11 @@
     }
   },
   "variables": {
-    "appServicePlanName": "[concat(parameters('projectName'), '-plan')]",
-    "backendAppName": "[concat(parameters('projectName'), '-backend-', uniqueString(resourceGroup().id))]",
-    "frontendAppName": "[concat(parameters('projectName'), '-frontend-', uniqueString(resourceGroup().id))]",
-    "postgresServerName": "[concat(parameters('projectName'), '-postgres-', uniqueString(resourceGroup().id))]",
-    "serviceBusNamespaceName": "[concat(parameters('projectName'), '-sb-', uniqueString(resourceGroup().id))]",
+    "appServicePlanName": "[format('{0}-plan', parameters('projectName'))]",
+    "backendAppName": "[format('{0}-backend-{1}', parameters('projectName'), uniqueString(resourceGroup().id))]",
+    "frontendAppName": "[format('{0}-frontend-{1}', parameters('projectName'), uniqueString(resourceGroup().id))]",
+    "postgresServerName": "[format('{0}-postgres-{1}', parameters('projectName'), uniqueString(resourceGroup().id))]",
+    "serviceBusNamespaceName": "[format('{0}-sb-{1}', parameters('projectName'), uniqueString(resourceGroup().id))]",
     "queueName": "ai-tasks"
   },
   "resources": [
@@ -73,27 +80,26 @@
     {
       "type": "Microsoft.DBforPostgreSQL/flexibleServers/databases",
       "apiVersion": "2022-12-01",
-      "name": "[concat(variables('postgresServerName'), '/llm_workflow')]",
-      "dependsOn": [
-        "[resourceId('Microsoft.DBforPostgreSQL/flexibleServers', variables('postgresServerName'))]"
-      ],
+      "name": "[format('{0}/{1}', variables('postgresServerName'), 'llm_workflow')]",
       "properties": {
         "charset": "UTF8",
         "collation": "en_US.utf8"
-      }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.DBforPostgreSQL/flexibleServers', variables('postgresServerName'))]"
+      ]
     },
     {
       "type": "Microsoft.DBforPostgreSQL/flexibleServers/firewallRules",
       "apiVersion": "2022-12-01",
-      "name": "[concat(variables('postgresServerName'), '/AllowAllAzureServices')]",
-      "dependsOn": [
-        "[resourceId('Microsoft.DBforPostgreSQL/flexibleServers', variables('postgresServerName'))]"
-      ],
+      "name": "[format('{0}/{1}', variables('postgresServerName'), 'AllowAllAzureServices')]",
       "properties": {
         "startIpAddress": "0.0.0.0",
         "endIpAddress": "0.0.0.0"
       },
-      "comments": "WARNING: This allows access from all Azure services. For production, use Virtual Network integration or restrict to specific IP ranges."
+      "dependsOn": [
+        "[resourceId('Microsoft.DBforPostgreSQL/flexibleServers', variables('postgresServerName'))]"
+      ]
     },
     {
       "type": "Microsoft.ServiceBus/namespaces",
@@ -109,10 +115,7 @@
     {
       "type": "Microsoft.ServiceBus/namespaces/queues",
       "apiVersion": "2022-10-01-preview",
-      "name": "[concat(variables('serviceBusNamespaceName'), '/', variables('queueName'))]",
-      "dependsOn": [
-        "[resourceId('Microsoft.ServiceBus/namespaces', variables('serviceBusNamespaceName'))]"
-      ],
+      "name": "[format('{0}/{1}', variables('serviceBusNamespaceName'), variables('queueName'))]",
       "properties": {
         "lockDuration": "PT5M",
         "maxSizeInMegabytes": 1024,
@@ -125,7 +128,10 @@
         "maxDeliveryCount": 10,
         "enablePartitioning": false,
         "enableExpress": false
-      }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces', variables('serviceBusNamespaceName'))]"
+      ]
     },
     {
       "type": "Microsoft.Web/serverfarms",
@@ -149,11 +155,6 @@
       "apiVersion": "2022-09-01",
       "name": "[variables('backendAppName')]",
       "location": "[parameters('location')]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Web/serverfarms', variables('appServicePlanName'))]",
-        "[resourceId('Microsoft.DBforPostgreSQL/flexibleServers', variables('postgresServerName'))]",
-        "[resourceId('Microsoft.ServiceBus/namespaces', variables('serviceBusNamespaceName'))]"
-      ],
       "kind": "app,linux",
       "properties": {
         "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('appServicePlanName'))]",
@@ -164,7 +165,7 @@
           "appSettings": [
             {
               "name": "DB_HOST",
-              "value": "[concat(variables('postgresServerName'), '.postgres.database.azure.com')]"
+              "value": "[format('{0}.postgres.database.azure.com', variables('postgresServerName'))]"
             },
             {
               "name": "DB_PORT",
@@ -200,7 +201,7 @@
             },
             {
               "name": "FRONTEND_URL",
-              "value": "[concat('https://', variables('frontendAppName'), '.azurestaticapps.net')]"
+              "value": "[format('https://{0}.azurestaticapps.net', variables('frontendAppName'))]"
             },
             {
               "name": "WEBSITE_NODE_DEFAULT_VERSION",
@@ -212,7 +213,12 @@
             }
           ]
         }
-      }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', variables('appServicePlanName'))]",
+        "[resourceId('Microsoft.DBforPostgreSQL/flexibleServers', variables('postgresServerName'))]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', variables('serviceBusNamespaceName'))]"
+      ]
     },
     {
       "type": "Microsoft.Web/staticSites",
@@ -231,22 +237,21 @@
           "apiLocation": "",
           "outputLocation": "dist"
         }
-      },
-      "comments": "Empty repositoryUrl and branch are intentional - deployment handled by GitHub Actions or Azure CLI"
+      }
     }
   ],
   "outputs": {
     "backendUrl": {
       "type": "string",
-      "value": "[concat('https://', variables('backendAppName'), '.azurewebsites.net')]"
+      "value": "[format('https://{0}.azurewebsites.net', variables('backendAppName'))]"
     },
     "frontendUrl": {
       "type": "string",
-      "value": "[concat('https://', variables('frontendAppName'), '.azurestaticapps.net')]"
+      "value": "[format('https://{0}.azurestaticapps.net', variables('frontendAppName'))]"
     },
     "postgresServer": {
       "type": "string",
-      "value": "[concat(variables('postgresServerName'), '.postgres.database.azure.com')]"
+      "value": "[format('{0}.postgres.database.azure.com', variables('postgresServerName'))]"
     },
     "serviceBusNamespace": {
       "type": "string",
