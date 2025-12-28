@@ -223,4 +223,4 @@ for await (const message of dlqReceiver.getMessageIterator()) {
 
 ---
 
-**Note**: The ARM template in this repository configures Azure Service Bus. This application uses Azure Service Bus exclusively for message queuing.
+**Note**: The Bicep template in this repository configures Azure Service Bus. This application uses Azure Service Bus exclusively for message queuing.

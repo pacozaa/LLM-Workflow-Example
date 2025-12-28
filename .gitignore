@@ -19,6 +19,9 @@ dist/
 .env.test.local
 .env.production.local
 
+# Azure deployment (keep template, ignore parameters with real credentials)
+# docs/deployment/azure-parameters.bicepparam should have placeholder values only
+
 # Logs
 npm-debug.log*
 yarn-debug.log*

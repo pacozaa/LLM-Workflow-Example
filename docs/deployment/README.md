@@ -1,6 +1,6 @@
 # Azure Deployment Guide
 
-This guide provides instructions for deploying the LLM Workflow Example application to Azure Cloud using Azure Resource Manager (ARM) templates. The deployment can be performed both manually and automatically through GitHub Actions.
+This guide provides instructions for deploying the LLM Workflow Example application to Azure Cloud using Bicep templates. The deployment can be performed both manually and automatically through GitHub Actions.
 
 ## Table of Contents
 
@@ -86,43 +86,29 @@ az group create \
 
 ### Step 3: Prepare Parameters File
 
-Edit the `docs/deployment/azure-parameters.json` file and replace the placeholder values:
+Edit the `docs/deployment/azure-parameters.bicepparam` file and replace the placeholder values:
 
-```json
-{
-  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
-  "contentVersion": "1.0.0.0",
-  "parameters": {
-    "projectName": {
-      "value": "llmworkflow"
-    },
-    "location": {
-      "value": "eastus"
-    },
-    "postgresAdminUsername": {
-      "value": "pgadmin"
-    },
-    "postgresAdminPassword": {
-      "value": "YourSecurePassword123!"
-    },
-    "openaiApiKey": {
-      "value": "sk-your-openai-api-key"
-    }
-  }
-}
+```bicep
+using './azure-template.bicep'
+
+param projectName = 'llmworkflow'
+param location = 'eastus'
+param postgresAdminUsername = 'pgadmin'
+param postgresAdminPassword = 'YourSecurePassword123!'
+param openaiApiKey = 'sk-your-openai-api-key'
 ```
 
 **Important**: Use a strong password for PostgreSQL that meets Azure's requirements:
 - At least 8 characters
 - Contains uppercase, lowercase, numbers, and special characters
 
-### Step 4: Deploy ARM Template
+### Step 4: Deploy Bicep Template
 
 ```bash
 az deployment group create \
   --resource-group $RESOURCE_GROUP \
-  --template-file docs/deployment/azure-template.json \
-  --parameters docs/deployment/azure-parameters.json
+  --template-file docs/deployment/azure-template.bicep \
+  --parameters docs/deployment/azure-parameters.bicepparam
 ```
 
 This deployment typically takes 10-15 minutes. You'll see output with resource URLs when complete.
@@ -295,7 +281,7 @@ The workflow automatically runs on:
 
 The GitHub Actions workflow includes:
 
-- ✅ Automated infrastructure deployment with ARM templates
+- ✅ Automated infrastructure deployment with Bicep templates
 - ✅ Backend build and deployment to App Service
 - ✅ Frontend build and deployment to Static Web Apps
 - ✅ Environment variable configuration
@@ -303,11 +289,11 @@ The GitHub Actions workflow includes:
 - ✅ Manual workflow dispatch option
 - ✅ Parallel deployment for faster builds
 
-## Security Considerations
+### Security Considerations
 
 ### Database Security
 
-⚠️ **Important**: The default ARM template creates a PostgreSQL server with a firewall rule that allows access from all Azure services (0.0.0.0/0). This is convenient for initial setup but **not recommended for production**.
+⚠️ **Important**: The default Bicep template creates a PostgreSQL server with a firewall rule that allows access from all Azure services (0.0.0.0/0). This is convenient for initial setup but **not recommended for production**.
 
 **For Production Deployments:**
 
@@ -344,7 +330,7 @@ The GitHub Actions workflow includes:
 
 ### Secret Management
 
-- **Never commit** `azure-parameters.json` with real credentials to source control
+- **Never commit** `azure-parameters.bicepparam` with real credentials to source control
 - Use **Azure Key Vault** for production secret management
 - Rotate credentials regularly
 - Use **managed identities** where possible instead of connection strings
@@ -539,7 +525,8 @@ az group delete \
 - [Azure Static Web Apps Documentation](https://learn.microsoft.com/azure/static-web-apps/)
 - [Azure Database for PostgreSQL Documentation](https://learn.microsoft.com/azure/postgresql/)
 - [Azure Service Bus Documentation](https://learn.microsoft.com/azure/service-bus-messaging/)
-- [ARM Template Reference](https://learn.microsoft.com/azure/templates/)
+- [Bicep Documentation](https://learn.microsoft.com/azure/azure-resource-manager/bicep/)
+- [Bicep Template Reference](https://learn.microsoft.com/azure/templates/)
 
 ## Support
 
